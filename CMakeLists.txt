@@ -7,17 +7,29 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(${PROJECT_NAME}
-    src/main.cpp
+find_package(Threads REQUIRED)
+
+function(apply_project_warnings target_name)
+    if(MSVC)
+        target_compile_options(${target_name} PRIVATE /W4)
+    else()
+        target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+endfunction()
+
+add_executable(latency
+    src/latency.cc
 )
 
-target_include_directories(${PROJECT_NAME}
+set_target_properties(latency PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+)
+
+target_include_directories(latency
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
-
-if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /W4)
-else()
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
-endif()
+target_link_libraries(latency PRIVATE Threads::Threads)
+apply_project_warnings(latency)

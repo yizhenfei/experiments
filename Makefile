@@ -2,7 +2,7 @@ BUILD_DIR ?= build
 BUILD_TYPE ?= Debug
 JOBS ?= $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
 
-.PHONY: all configure build run clean rebuild debug release
+.PHONY: all configure build latency run-latency clean rebuild debug release
 
 all: build
 
@@ -12,8 +12,12 @@ configure:
 build: configure
 	cmake --build $(BUILD_DIR) -j $(JOBS)
 
-run: build
-	./$(BUILD_DIR)/experiments
+latency:
+	cmake -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+	cmake --build $(BUILD_DIR) --target latency -j $(JOBS)
+
+run-latency: latency
+	./$(BUILD_DIR)/latency $(ARGS)
 
 debug:
 	$(MAKE) BUILD_TYPE=Debug build
